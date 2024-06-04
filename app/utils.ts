@@ -1,9 +1,5 @@
 'use server'
 
-import authOptions from '../app/api/auth/[...nextauth]/options'
-import { getServerSession } from 'next-auth';
-import { redirect } from 'next/navigation'
-
 export const convertBrazilianValueToNumber = (value) => {
     if (typeof value === 'string') {
         value = value.replace(/\./g, '').replace(',', '.')
@@ -31,20 +27,3 @@ export const slugify = (str) => {
 
     return str;
 }
-
-export const getCurrentUser = async () => {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-        return undefined
-    }
-    // console.log('session', session)
-    const user = session.user
-    return user
-}
-
-export const assertCurrentUser = async () => {
-    const user = await getCurrentUser()
-    if (!user) redirect('/auth/signin')
-    return user
-}
-
