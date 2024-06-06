@@ -7,6 +7,7 @@ import Fetcher from '../../../fetcher'
 import { getRecords } from './records'
 import { loadTable } from './tables'
 import ids from './ids'
+import { obterAfastamentos } from './afastamentos'
 
 export default async function Record({ params }) {
   let title = ''
@@ -50,6 +51,12 @@ export default async function Record({ params }) {
     unidades.forEach(u => { records = [...records, ...u.records] })
     // Sort by most recent end date
     records.sort((a, b) => b.fim - a.fim)
+
+    const afastamentos = await obterAfastamentos(sessionId, records)
+
+    // console.log('afastamentos', afastamentos)
+
+    records = [...records, ...afastamentos]
 
     const tooltip = (position, name, start, end, tooltips) => {
       return renderToStringServer(

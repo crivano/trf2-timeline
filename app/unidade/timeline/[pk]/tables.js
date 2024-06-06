@@ -15,14 +15,24 @@ export const loadTable = async(sessionId, database, table, field, value) => {
     }
 
     if (field && value)
-        params.query.filter = [
-            "=", [
-                "field",
-                field,
-                null
-            ],
-            value
-        ]
+        if (value instanceof Array)
+            params.query.filter = [
+                "=", [
+                    "field",
+                    field,
+                    null
+                ],
+                ...value
+            ]
+        else
+            params.query.filter = [
+                "=", [
+                    "field",
+                    field,
+                    null
+                ],
+                value
+            ]
 
     const url = `${process.env.METABASE_API_URL}/dataset`
         // console.log('url', url)

@@ -2,7 +2,7 @@ import { loadTable } from './tables'
 import { maiusculasEMinusculas } from '../../../text'
 import ids from './ids'
 
-const dateStringToDate = (dateString) => {
+export const dateStringToDate = (dateString) => {
     try {
         var year = dateString.substring(0, 4);
         var month = dateString.substring(4, 6);
