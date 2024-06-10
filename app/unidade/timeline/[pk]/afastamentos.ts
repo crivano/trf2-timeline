@@ -16,7 +16,7 @@ export const obterAfastamentos = async (sessionId, records: Registro[]) => {
     // @ts-ignore
     const matriculas = [...new Set(records.map(d => d.matricula))]
 
-    console.log('matriculas', matriculas)
+    // console.log('matriculas', matriculas)
 
     const pFerias = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_FERIAS, 18235, matriculas)
     const pAusencias = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_AUSENCIAS, 22375, matriculas)
@@ -68,7 +68,7 @@ export const obterAfastamentos = async (sessionId, records: Registro[]) => {
         return acc
     }, {})
 
-    console.log('afastamentosPorMagistrado', afastamentosPorMagistrado)
+    // console.log('afastamentosPorMagistrado', afastamentosPorMagistrado)
 
     matriculas.forEach(m => {
         const afs = afastamentosPorMagistrado[m]
