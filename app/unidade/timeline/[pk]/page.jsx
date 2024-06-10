@@ -99,6 +99,7 @@ export default async function Record({ params }) {
       data = [[
         { type: "string", id: "Position" },
         { type: "string", id: "Name" },
+        { type: 'string', id: 'style', role: 'style' },
         { type: "string", role: "tooltip" },
         { type: "date", id: "Start" },
         { type: "date", id: "End" },
@@ -110,7 +111,7 @@ export default async function Record({ params }) {
         if (r.motivo) tooltips.push({ label: 'Motivo', value: r.motivo })
         if (r.obs) tooltips.push({ label: 'Observações', value: r.obs })
         if (r.doc) tooltips.push({ label: 'Documento', value: r.doc })
-        return [position, r.descricao, tooltip(position, r.descricao, r.inicio, r.fim, tooltips), r.inicio, r.fim, '']
+        return [position, r.descricao, r.descricao === 'Férias' ? '#ddd' : r.descricao === 'Ausência' ? '#aaa' : null, tooltip(position, r.descricao, r.inicio, r.fim, tooltips), r.inicio, r.fim, '']
       })]
     } catch (error) {
       console.error(error)
