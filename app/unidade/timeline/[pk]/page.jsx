@@ -59,6 +59,8 @@ export default async function Record({ params }) {
     records = [...records, ...afastamentos]
 
     const tooltip = (position, name, start, end, tooltips) => {
+      const omitirDataDeFim = tooltips.find(t => t.label === 'Data de fim forçada' && t.value.includes('aplicada a data de hoje'))
+
       return renderToStringServer(
         <div style={{ minWidth: '15em', maxWidth: '20em', backgroundColor: 'white', border: '1px solid black', fontFamily: 'sans-serif' }}>
           <div style={{ padding: '.5em .5em .5em .5em', fontWeight: 'bold', textAlign: 'left', backgroundColor: 'lightgray' }}>
@@ -70,7 +72,7 @@ export default async function Record({ params }) {
           </div>
           <hr style={{ margin: '0' }} />
           <div style={{ padding: '.5em .5em .5em .5em' }}>
-            <b>De:</b> {start.toLocaleDateString('en-GB')} <b>a:</b> {end.toLocaleDateString('en-GB')}
+            <b>De:</b> {start.toLocaleDateString('en-GB')} <b>a:</b> {omitirDataDeFim ? '-' : end.toLocaleDateString('en-GB')}
             {dateDiff(start, end)
               ? <><br /><b>Duração:</b> {dateDiff(start, end)}</>
               : <></>}
