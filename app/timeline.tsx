@@ -19,7 +19,7 @@ export default function Timeline(props) {
                     const dataTable = chartWrapper.getDataTable();
                     const { row, column } = selectedItem;
 
-                    const link: string = dataTable?.getValue(row, 5) as string;
+                    const link: string = dataTable?.getValue(row, 6) as string;
                     console.log("You selected:", {
                         row,
                         column,

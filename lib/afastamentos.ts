@@ -12,7 +12,7 @@ type Registro = {
     doc: any | undefined;
 }
 
-export const obterAfastamentos = async (sessionId, records: Registro[]) => {
+export const obterAfastamentos = async (sessionId, records: Registro[], removerAfastamentosNaoSobrepostos) => {
     // @ts-ignore
     const matriculas = [...new Set(records.map(d => d.matricula))]
 
@@ -70,12 +70,15 @@ export const obterAfastamentos = async (sessionId, records: Registro[]) => {
 
     // console.log('afastamentosPorMagistrado', afastamentosPorMagistrado)
 
-    matriculas.forEach(m => {
-        const afs = afastamentosPorMagistrado[m]
-        const recs = recordsPorMagistrado[m]
-        if (!afs || !recs) return
-        afastamentosPorMagistrado[m] = afs.filter(a => recs.some(r => (a.inicio >= r.inicio && a.inicio <= r.fim) || (a.fim >= r.inicio && a.fim <= r.fim)))
-    })
+    // remover afastamentos que não se sobrepõem a registros
+    if (removerAfastamentosNaoSobrepostos) {
+        matriculas.forEach(m => {
+            const afs = afastamentosPorMagistrado[m]
+            const recs = recordsPorMagistrado[m]
+            if (!afs || !recs) return
+            afastamentosPorMagistrado[m] = afs.filter(a => recs.some(r => (a.inicio >= r.inicio && a.inicio <= r.fim) || (a.fim >= r.inicio && a.fim <= r.fim)))
+        })
+    }
 
     // remover afastamentos com data de início e fim iguais
     //

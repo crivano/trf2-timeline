@@ -4,7 +4,7 @@ import { renderToStringServer, maiusculasEMinusculas } from '../../../text'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faCheckToSlot } from '@fortawesome/free-solid-svg-icons'
 import Fetcher from '../../../fetcher'
-import { getRecords } from '../../../../lib/records'
+import { getRecordsDeMagistrado } from '../../../../lib/records'
 import { assertSession, loadTable } from '../../../../lib/tables'
 import ids from '../../../../lib/ids'
 import { obterAfastamentos } from '../../../../lib/afastamentos'
@@ -23,41 +23,44 @@ export default async function Record({ params }) {
 
       const sessionId = session.id
 
-      const pMagistrados = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_MAGISTRADO)
+      const pUnidades = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_UNIDADE)
       const pTiposDesignacao = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_TIPO_DESIGNACAO)
       const pMotivosDesignacao = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_MOTIVO_DESIGNACAO)
       const pCriteriosPromocao = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_CRITERIO_PROMOCAO)
       const pMotivosRemocao = loadTable(sessionId, ids.METABASE_DATABASE, ids.METABASE_TABLE_MOTIVO_REMOCAO)
 
-      let unidades = decodeURIComponent(params.pk).split(',')
+      let itens = decodeURIComponent(params.pk).split(',')
       // console.log('unidades', unidades)
-      unidades = unidades.map((u) => {
+      itens = itens.map((i) => {
         return {
-          sigla: u,
-          pRecords: getRecords(sessionId, u, pMagistrados, pTiposDesignacao, pMotivosDesignacao, pCriteriosPromocao, pMotivosRemocao)
+          sigla: i,
+          pRecords: getRecordsDeMagistrado(sessionId, i, pUnidades, pTiposDesignacao, pMotivosDesignacao, pCriteriosPromocao, pMotivosRemocao)
         }
       })
 
-      for (let i = 0; i < unidades.length; i++) {
-        const unidade = unidades[i]
-        const { records, title } = await unidade.pRecords
-        unidade.records = records
-        unidade.title = title
+      for (let i = 0; i < itens.length; i++) {
+        const item = itens[i]
+        const { records, title } = await item.pRecords
+        item.records = records
+        item.title = title
       }
 
       // console.log('unidades', unidades)
 
-      title = unidades[0].title
+      title = itens[0].title
+
       let records = []
-      unidades.forEach(u => { records = [...records, ...u.records] })
+      itens.forEach(u => { records = [...records, ...u.records] })
       // Sort by most recent end date
       records.sort((a, b) => b.fim - a.fim)
 
-      const afastamentos = await obterAfastamentos(sessionId, records, true)
+      // console.log('records', records)
 
-      // console.log('afastamentos', afastamentos)
+      const afastamentos = await obterAfastamentos(sessionId, records, false)
 
-      records = [...records, ...afastamentos]
+      // // console.log('afastamentos', afastamentos)
+
+      records = [...afastamentos, ...records]
 
       const tooltip = (position, name, start, end, tooltips) => {
         const omitirDataDeFim = tooltips.find(t => t.label === 'Data de fim forçada' && t.value.includes('aplicada a data de hoje'))
@@ -88,9 +91,9 @@ export default async function Record({ params }) {
       }
 
       // Tirar isso daqui...
-      let magistrados = await pMagistrados
+      let unidades = await pUnidades
       // magistrados = magistrados.filter(d => matriculas.includes(d['Matricula']))
-      magistrados = magistrados.reduce((prev, cur) => ({ ...prev, [cur.Matricula]: cur }), {})
+      unidades = unidades.reduce((prev, cur) => ({ ...prev, [cur.CodigoDesignacao]: cur }), {})
 
       // Build data array
       data = [[
@@ -102,19 +105,24 @@ export default async function Record({ params }) {
         { type: "date", id: "End" },
         { type: "string", role: "link" },
       ], ...records.map(r => {
-        const position = maiusculasEMinusculas(magistrados[r.matricula] ? magistrados[r.matricula].NomeMagistrado : `Magistrado não localizado (${r.matricula})`)
+        const position = (r.descricao === 'Férias' || r.descricao === 'Ausência')
+          ? r.descricao : maiusculasEMinusculas(unidades[r.codunidade]
+            ? unidades[r.codunidade].DescricaoDesignacao
+            : `Unidade não localizada (${r.codunidade})`)
         const tooltips = []
         if (r.fimForcado) tooltips.push({ label: 'Data de fim forçada', value: r.fimForcado })
         if (r.motivo) tooltips.push({ label: 'Motivo', value: r.motivo })
         if (r.obs) tooltips.push({ label: 'Observações', value: r.obs })
         if (r.doc) tooltips.push({ label: 'Documento', value: r.doc })
-        const link = `/magistrado/timeline/${r.matricula}`
+        const link = (r.descricao !== 'Férias' && r.descricao !== 'Ausência') ? `/unidade/timeline/${r.codunidade}` : ''
         return [position, r.descricao, r.descricao === 'Férias' ? '#ddd' : r.descricao === 'Ausência' ? '#aaa' : null, tooltip(position, r.descricao, r.inicio, r.fim, tooltips), r.inicio, r.fim, link]
       })]
     } catch (error) {
       console.error(error)
       return <div className="alert alert-danger" role="alert">Erro ao carregar dados: {error}</div>
     }
+
+    // console.log('data', data)
 
     return (
       <>
