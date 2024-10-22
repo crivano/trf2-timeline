@@ -11,6 +11,8 @@ import { obterAfastamentos } from '../../../../lib/afastamentos'
 import { Suspense } from 'react'
 // import { PageContent } from './page-content'
 
+export const maxDuration = 60
+
 export default async function Record({ params }) {
 
   const PageContent = async () => {
